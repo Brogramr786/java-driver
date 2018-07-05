@@ -109,12 +109,12 @@ public class ViewParser extends RelationParser {
       DataType dataType = rows.dataTypeParser().parse(keyspaceId, raw.dataType, userTypes, context);
       ColumnMetadata column =
           new DefaultColumnMetadata(
-              keyspaceId, viewId, raw.name, dataType, raw.kind == RawColumn.Kind.STATIC);
+              keyspaceId, viewId, raw.name, dataType, raw.kind.equals(RawColumn.KIND_STATIC));
       switch (raw.kind) {
-        case PARTITION_KEY:
+        case RawColumn.KIND_PARTITION_KEY:
           partitionKeyBuilder.add(column);
           break;
-        case CLUSTERING_COLUMN:
+        case RawColumn.KIND_CLUSTERING_COLUMN:
           clusteringColumnsBuilder.put(
               column, raw.reversed ? ClusteringOrder.DESC : ClusteringOrder.ASC);
           break;

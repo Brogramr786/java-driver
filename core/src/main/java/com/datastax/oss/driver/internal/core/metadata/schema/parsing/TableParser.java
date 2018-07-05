@@ -173,12 +173,12 @@ public class TableParser extends RelationParser {
       DataType dataType = rows.dataTypeParser().parse(keyspaceId, raw.dataType, userTypes, context);
       ColumnMetadata column =
           new DefaultColumnMetadata(
-              keyspaceId, tableId, raw.name, dataType, raw.kind == RawColumn.Kind.STATIC);
+              keyspaceId, tableId, raw.name, dataType, raw.kind.equals(RawColumn.KIND_STATIC));
       switch (raw.kind) {
-        case PARTITION_KEY:
+        case RawColumn.KIND_PARTITION_KEY:
           partitionKeyBuilder.add(column);
           break;
-        case CLUSTERING_COLUMN:
+        case RawColumn.KIND_CLUSTERING_COLUMN:
           clusteringColumnsBuilder.put(
               column, raw.reversed ? ClusteringOrder.DESC : ClusteringOrder.ASC);
           break;
@@ -236,12 +236,12 @@ public class TableParser extends RelationParser {
     while (iterator.hasNext()) {
       RawColumn column = iterator.next();
       switch (column.kind) {
-        case CLUSTERING_COLUMN:
-        case REGULAR:
+        case RawColumn.KIND_CLUSTERING_COLUMN:
+        case RawColumn.KIND_REGULAR:
           iterator.remove();
           break;
-        case STATIC:
-          column.kind = RawColumn.Kind.REGULAR;
+        case RawColumn.KIND_STATIC:
+          column.kind = RawColumn.KIND_REGULAR;
           break;
         default:
           // nothing to do
@@ -256,7 +256,7 @@ public class TableParser extends RelationParser {
     ListIterator<RawColumn> iterator = columns.listIterator();
     while (iterator.hasNext()) {
       RawColumn column = iterator.next();
-      if (column.kind == RawColumn.Kind.REGULAR && "empty".equals(column.dataType)) {
+      if (column.kind.equals(RawColumn.KIND_REGULAR) && "empty".equals(column.dataType)) {
         iterator.remove();
       }
     }
@@ -266,7 +266,7 @@ public class TableParser extends RelationParser {
     ListIterator<RawColumn> iterator = columns.listIterator();
     while (iterator.hasNext()) {
       RawColumn column = iterator.next();
-      if (column.kind == RawColumn.Kind.COMPACT_VALUE && column.name.asInternal().isEmpty()) {
+      if (column.kind.equals(RawColumn.KIND_COMPACT_VALUE) && column.name.asInternal().isEmpty()) {
         iterator.remove();
       }
     }

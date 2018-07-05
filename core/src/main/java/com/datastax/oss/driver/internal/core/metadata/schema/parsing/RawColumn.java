@@ -50,32 +50,14 @@ public class RawColumn implements Comparable<RawColumn> {
     }
   }
 
-  public enum Kind {
-    PARTITION_KEY,
-    CLUSTERING_COLUMN,
-    REGULAR,
-    COMPACT_VALUE,
-    STATIC,
-    ;
-
-    static Kind from(String s) {
-      if ("partition_key".equalsIgnoreCase(s)) {
-        return PARTITION_KEY;
-      } else if ("clustering_key".equalsIgnoreCase(s) || "clustering".equalsIgnoreCase(s)) {
-        return CLUSTERING_COLUMN;
-      } else if ("regular".equalsIgnoreCase(s)) {
-        return REGULAR;
-      } else if ("compact_value".equalsIgnoreCase(s)) {
-        return COMPACT_VALUE;
-      } else if ("static".equalsIgnoreCase(s)) {
-        return STATIC;
-      }
-      throw new IllegalArgumentException("Unknown column kind " + s);
-    }
-  }
+  public static final String KIND_PARTITION_KEY = "partition_key";
+  public static final String KIND_CLUSTERING_COLUMN = "clustering";
+  public static final String KIND_REGULAR = "regular";
+  public static final String KIND_COMPACT_VALUE = "compact_value";
+  public static final String KIND_STATIC = "static";
 
   public final CqlIdentifier name;
-  public Kind kind;
+  public String kind;
   public final int position;
   public final String dataType;
   public final boolean reversed;
@@ -112,7 +94,15 @@ public class RawColumn implements Comparable<RawColumn> {
     //     PRIMARY KEY (keyspace_name, table_name, column_name)
     // ) WITH CLUSTERING ORDER BY (table_name ASC, column_name ASC)
     this.name = CqlIdentifier.fromInternal(row.getString("column_name"));
-    this.kind = Kind.from((row.contains("kind") ? row.getString("kind") : row.getString("type")));
+    if (row.contains("kind")) {
+      this.kind = row.getString("kind");
+    } else {
+      this.kind = row.getString("type");
+      // remap clustering_key to KIND_CLUSTERING_COLUMN so code doesn't have to check for both.
+      if (this.kind.equals("clustering_key")) {
+        this.kind = KIND_CLUSTERING_COLUMN;
+      }
+    }
 
     Integer rawPosition =
         row.contains("position") ? row.getInteger("position") : row.getInteger("component_index");
@@ -137,9 +127,9 @@ public class RawColumn implements Comparable<RawColumn> {
   public int compareTo(@NonNull RawColumn that) {
     // First, order by kind. Then order partition key and clustering columns by position. For
     // other kinds, order by column name.
-    if (this.kind != that.kind) {
+    if (!this.kind.equals(that.kind)) {
       return this.kind.compareTo(that.kind);
-    } else if (kind == Kind.PARTITION_KEY || kind == Kind.CLUSTERING_COLUMN) {
+    } else if (kind.equals(KIND_PARTITION_KEY) || kind.equals(KIND_CLUSTERING_COLUMN)) {
       return Integer.compare(this.position, that.position);
     } else {
       return this.name.asInternal().compareTo(that.name.asInternal());
