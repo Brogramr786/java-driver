@@ -16,7 +16,7 @@
 package com.datastax.oss.driver.internal.core.metadata.schema.queries;
 
 import com.datastax.oss.driver.api.core.config.DefaultDriverOption;
-import com.datastax.oss.driver.api.core.config.DriverConfigProfile;
+import com.datastax.oss.driver.api.core.config.DriverExecutionProfile;
 import com.datastax.oss.driver.api.core.metadata.Metadata;
 import com.datastax.oss.driver.internal.core.adminrequest.AdminRequestHandler;
 import com.datastax.oss.driver.internal.core.adminrequest.AdminResult;
@@ -71,7 +71,7 @@ public abstract class SchemaQueries {
       DriverChannel channel,
       boolean isCassandraV3,
       CompletableFuture<Metadata> refreshFuture,
-      DriverConfigProfile config,
+      DriverExecutionProfile config,
       String logPrefix) {
     this.channel = channel;
     this.adminExecutor = channel.eventLoop();

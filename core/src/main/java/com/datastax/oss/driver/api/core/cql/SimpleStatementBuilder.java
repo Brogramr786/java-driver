@@ -163,7 +163,7 @@ public class SimpleStatementBuilder
             : positionalValuesBuilder.build(),
         (namedValuesBuilder == null) ? NullAllowingImmutableMap.of() : namedValuesBuilder.build(),
         configProfileName,
-        configProfile,
+        executionProfile,
         keyspace,
         routingKeyspace,
         routingKey,

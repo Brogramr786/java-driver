@@ -21,7 +21,7 @@ import static org.mockito.Mockito.timeout;
 
 import com.datastax.oss.driver.api.core.config.DefaultDriverOption;
 import com.datastax.oss.driver.api.core.config.DriverConfig;
-import com.datastax.oss.driver.api.core.config.DriverConfigProfile;
+import com.datastax.oss.driver.api.core.config.DriverExecutionProfile;
 import com.datastax.oss.driver.api.core.metadata.Node;
 import com.datastax.oss.driver.internal.core.context.EventBus;
 import com.datastax.oss.driver.internal.core.context.InternalDriverContext;
@@ -61,7 +61,7 @@ public class MetadataManagerTest {
   @Mock private NettyOptions nettyOptions;
   @Mock private TopologyMonitor topologyMonitor;
   @Mock private DriverConfig config;
-  @Mock private DriverConfigProfile defaultProfile;
+  @Mock private DriverExecutionProfile defaultProfile;
   @Mock private EventBus eventBus;
   @Mock private SchemaQueriesFactory schemaQueriesFactory;
   @Mock private SchemaParserFactory schemaParserFactory;

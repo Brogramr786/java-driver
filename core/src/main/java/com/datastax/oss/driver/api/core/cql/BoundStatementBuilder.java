@@ -121,7 +121,7 @@ public class BoundStatementBuilder extends StatementBuilder<BoundStatementBuilde
         variableDefinitions,
         values,
         configProfileName,
-        configProfile,
+        executionProfile,
         routingKeyspace,
         routingKey,
         routingToken,

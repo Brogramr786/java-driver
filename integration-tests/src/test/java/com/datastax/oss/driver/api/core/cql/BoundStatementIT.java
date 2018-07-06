@@ -52,7 +52,7 @@ public class BoundStatementIT {
         .session()
         .execute(
             SimpleStatement.builder("CREATE TABLE IF NOT EXISTS test2 (k text primary key, v0 int)")
-                .withConfigProfile(sessionRule.slowProfile())
+                .withExecutionProfile(sessionRule.slowProfile())
                 .build());
   }
 

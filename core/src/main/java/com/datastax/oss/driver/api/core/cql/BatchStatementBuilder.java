@@ -133,7 +133,7 @@ public class BatchStatementBuilder extends StatementBuilder<BatchStatementBuilde
         batchType,
         statementsBuilder.build(),
         configProfileName,
-        configProfile,
+        executionProfile,
         keyspace,
         routingKeyspace,
         routingKey,

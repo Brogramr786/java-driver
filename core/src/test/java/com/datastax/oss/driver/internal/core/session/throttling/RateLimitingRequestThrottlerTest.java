@@ -20,7 +20,7 @@ import static com.datastax.oss.driver.Assertions.assertThat;
 import com.datastax.oss.driver.api.core.RequestThrottlingException;
 import com.datastax.oss.driver.api.core.config.DefaultDriverOption;
 import com.datastax.oss.driver.api.core.config.DriverConfig;
-import com.datastax.oss.driver.api.core.config.DriverConfigProfile;
+import com.datastax.oss.driver.api.core.config.DriverExecutionProfile;
 import com.datastax.oss.driver.internal.core.context.InternalDriverContext;
 import com.datastax.oss.driver.internal.core.context.NettyOptions;
 import com.datastax.oss.driver.internal.core.util.concurrent.ScheduledTaskCapturingEventLoop;
@@ -51,7 +51,7 @@ public class RateLimitingRequestThrottlerTest {
 
   @Mock private InternalDriverContext context;
   @Mock private DriverConfig config;
-  @Mock private DriverConfigProfile defaultProfile;
+  @Mock private DriverExecutionProfile defaultProfile;
   @Mock private NettyOptions nettyOptions;
   @Mock private EventLoopGroup adminGroup;
 

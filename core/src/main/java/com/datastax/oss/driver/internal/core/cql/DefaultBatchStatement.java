@@ -16,7 +16,7 @@
 package com.datastax.oss.driver.internal.core.cql;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
-import com.datastax.oss.driver.api.core.config.DriverConfigProfile;
+import com.datastax.oss.driver.api.core.config.DriverExecutionProfile;
 import com.datastax.oss.driver.api.core.cql.BatchStatement;
 import com.datastax.oss.driver.api.core.cql.BatchType;
 import com.datastax.oss.driver.api.core.cql.BatchableStatement;
@@ -38,7 +38,7 @@ public class DefaultBatchStatement implements BatchStatement {
   private final BatchType batchType;
   private final List<BatchableStatement<?>> statements;
   private final String configProfileName;
-  private final DriverConfigProfile configProfile;
+  private final DriverExecutionProfile executionProfile;
   private final CqlIdentifier keyspace;
   private final CqlIdentifier routingKeyspace;
   private final ByteBuffer routingKey;
@@ -53,7 +53,7 @@ public class DefaultBatchStatement implements BatchStatement {
       BatchType batchType,
       List<BatchableStatement<?>> statements,
       String configProfileName,
-      DriverConfigProfile configProfile,
+      DriverExecutionProfile executionProfile,
       CqlIdentifier keyspace,
       CqlIdentifier routingKeyspace,
       ByteBuffer routingKey,
@@ -66,7 +66,7 @@ public class DefaultBatchStatement implements BatchStatement {
     this.batchType = batchType;
     this.statements = ImmutableList.copyOf(statements);
     this.configProfileName = configProfileName;
-    this.configProfile = configProfile;
+    this.executionProfile = executionProfile;
     this.keyspace = keyspace;
     this.routingKeyspace = routingKeyspace;
     this.routingKey = routingKey;
@@ -91,7 +91,7 @@ public class DefaultBatchStatement implements BatchStatement {
         newBatchType,
         statements,
         configProfileName,
-        configProfile,
+        executionProfile,
         keyspace,
         routingKeyspace,
         routingKey,
@@ -110,7 +110,7 @@ public class DefaultBatchStatement implements BatchStatement {
         batchType,
         statements,
         configProfileName,
-        configProfile,
+        executionProfile,
         newKeyspace,
         routingKeyspace,
         routingKey,
@@ -133,7 +133,7 @@ public class DefaultBatchStatement implements BatchStatement {
           batchType,
           ImmutableList.<BatchableStatement<?>>builder().addAll(statements).add(statement).build(),
           configProfileName,
-          configProfile,
+          executionProfile,
           keyspace,
           routingKeyspace,
           routingKey,
@@ -160,7 +160,7 @@ public class DefaultBatchStatement implements BatchStatement {
               .addAll(newStatements)
               .build(),
           configProfileName,
-          configProfile,
+          executionProfile,
           keyspace,
           routingKeyspace,
           routingKey,
@@ -185,7 +185,7 @@ public class DefaultBatchStatement implements BatchStatement {
         batchType,
         ImmutableList.of(),
         configProfileName,
-        configProfile,
+        executionProfile,
         keyspace,
         routingKeyspace,
         routingKey,
@@ -215,7 +215,7 @@ public class DefaultBatchStatement implements BatchStatement {
         batchType,
         statements,
         configProfileName,
-        configProfile,
+        executionProfile,
         keyspace,
         routingKeyspace,
         routingKey,
@@ -228,18 +228,18 @@ public class DefaultBatchStatement implements BatchStatement {
   }
 
   @Override
-  public String getConfigProfileName() {
+  public String getExecutionProfileName() {
     return configProfileName;
   }
 
   @NonNull
   @Override
-  public BatchStatement setConfigProfileName(@Nullable String newConfigProfileName) {
+  public BatchStatement setExecutionProfileName(@Nullable String newConfigProfileName) {
     return new DefaultBatchStatement(
         batchType,
         statements,
         newConfigProfileName,
-        configProfile,
+        executionProfile,
         keyspace,
         routingKeyspace,
         routingKey,
@@ -252,13 +252,13 @@ public class DefaultBatchStatement implements BatchStatement {
   }
 
   @Override
-  public DriverConfigProfile getConfigProfile() {
-    return configProfile;
+  public DriverExecutionProfile getExecutionProfile() {
+    return executionProfile;
   }
 
   @NonNull
   @Override
-  public DefaultBatchStatement setConfigProfile(@Nullable DriverConfigProfile newProfile) {
+  public DefaultBatchStatement setExecutionProfile(@Nullable DriverExecutionProfile newProfile) {
     return new DefaultBatchStatement(
         batchType,
         statements,
@@ -311,7 +311,7 @@ public class DefaultBatchStatement implements BatchStatement {
         batchType,
         statements,
         configProfileName,
-        configProfile,
+        executionProfile,
         keyspace,
         newRoutingKeyspace,
         routingKey,
@@ -345,7 +345,7 @@ public class DefaultBatchStatement implements BatchStatement {
         batchType,
         statements,
         configProfileName,
-        configProfile,
+        executionProfile,
         keyspace,
         routingKeyspace,
         newRoutingKey,
@@ -379,7 +379,7 @@ public class DefaultBatchStatement implements BatchStatement {
         batchType,
         statements,
         configProfileName,
-        configProfile,
+        executionProfile,
         keyspace,
         routingKeyspace,
         routingKey,
@@ -404,7 +404,7 @@ public class DefaultBatchStatement implements BatchStatement {
         batchType,
         statements,
         configProfileName,
-        configProfile,
+        executionProfile,
         keyspace,
         routingKeyspace,
         routingKey,
@@ -428,7 +428,7 @@ public class DefaultBatchStatement implements BatchStatement {
         batchType,
         statements,
         configProfileName,
-        configProfile,
+        executionProfile,
         keyspace,
         routingKeyspace,
         routingKey,
@@ -452,7 +452,7 @@ public class DefaultBatchStatement implements BatchStatement {
         batchType,
         statements,
         configProfileName,
-        configProfile,
+        executionProfile,
         keyspace,
         routingKeyspace,
         routingKey,
@@ -476,7 +476,7 @@ public class DefaultBatchStatement implements BatchStatement {
         batchType,
         statements,
         configProfileName,
-        configProfile,
+        executionProfile,
         keyspace,
         routingKeyspace,
         routingKey,

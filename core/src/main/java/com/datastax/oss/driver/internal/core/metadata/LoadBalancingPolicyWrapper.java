@@ -15,7 +15,7 @@
  */
 package com.datastax.oss.driver.internal.core.metadata;
 
-import com.datastax.oss.driver.api.core.config.DriverConfigProfile;
+import com.datastax.oss.driver.api.core.config.DriverExecutionProfile;
 import com.datastax.oss.driver.api.core.loadbalancing.LoadBalancingPolicy;
 import com.datastax.oss.driver.api.core.loadbalancing.NodeDistance;
 import com.datastax.oss.driver.api.core.metadata.Metadata;
@@ -154,7 +154,7 @@ public class LoadBalancingPolicyWrapper implements AutoCloseable {
       case RUNNING:
         LoadBalancingPolicy policy = policiesPerProfile.get(configProfileName);
         if (policy == null) {
-          policy = policiesPerProfile.get(DriverConfigProfile.DEFAULT_NAME);
+          policy = policiesPerProfile.get(DriverExecutionProfile.DEFAULT_NAME);
         }
         return policy.newQueryPlan(request, session);
       default:
@@ -164,7 +164,7 @@ public class LoadBalancingPolicyWrapper implements AutoCloseable {
 
   @NonNull
   public Queue<Node> newQueryPlan() {
-    return newQueryPlan(null, DriverConfigProfile.DEFAULT_NAME, null);
+    return newQueryPlan(null, DriverExecutionProfile.DEFAULT_NAME, null);
   }
 
   // when it comes in from the outside

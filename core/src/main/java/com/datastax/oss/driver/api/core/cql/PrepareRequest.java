@@ -16,7 +16,7 @@
 package com.datastax.oss.driver.api.core.cql;
 
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.config.DriverConfigProfile;
+import com.datastax.oss.driver.api.core.config.DriverExecutionProfile;
 import com.datastax.oss.driver.api.core.retry.RetryPolicy;
 import com.datastax.oss.driver.api.core.session.Request;
 import com.datastax.oss.driver.api.core.session.Session;
@@ -80,21 +80,21 @@ public interface PrepareRequest extends Request {
   }
 
   /**
-   * The name of the driver configuration profile to use for the bound statements that will be
-   * created from the prepared statement.
+   * The name of the execution profile to use for the bound statements that will be created from the
+   * prepared statement.
    *
-   * <p>Note that this will be ignored if {@link #getConfigProfileForBoundStatements()} returns a
+   * <p>Note that this will be ignored if {@link #getExecutionProfileForBoundStatements()} returns a
    * non-null value.
    */
   @Nullable
-  String getConfigProfileNameForBoundStatements();
+  String getExecutionProfileNameForBoundStatements();
 
   /**
-   * The configuration profile to use for the bound statements that will be created from the
-   * prepared statement.
+   * The execution profile to use for the bound statements that will be created from the prepared
+   * statement.
    */
   @Nullable
-  DriverConfigProfile getConfigProfileForBoundStatements();
+  DriverExecutionProfile getExecutionProfileForBoundStatements();
 
   /**
    * Returns the custom payload to send alongside the bound statements that will be created from the

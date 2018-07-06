@@ -17,7 +17,7 @@ package com.datastax.oss.driver.internal.core.cql;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.ProtocolVersion;
-import com.datastax.oss.driver.api.core.config.DriverConfigProfile;
+import com.datastax.oss.driver.api.core.config.DriverExecutionProfile;
 import com.datastax.oss.driver.api.core.cql.BoundStatement;
 import com.datastax.oss.driver.api.core.cql.BoundStatementBuilder;
 import com.datastax.oss.driver.api.core.cql.ColumnDefinitions;
@@ -43,7 +43,7 @@ public class DefaultPreparedStatement implements PreparedStatement {
   private final ProtocolVersion protocolVersion;
   // The options to propagate to the bound statements:
   private final String configProfileName;
-  private final DriverConfigProfile configProfile;
+  private final DriverExecutionProfile executionProfile;
   private final Map<String, ByteBuffer> customPayloadForBoundStatements;
   private final Boolean idempotent;
 
@@ -55,7 +55,7 @@ public class DefaultPreparedStatement implements PreparedStatement {
       ByteBuffer resultMetadataId,
       ColumnDefinitions resultSetDefinitions,
       String configProfileName,
-      DriverConfigProfile configProfile,
+      DriverExecutionProfile executionProfile,
       CqlIdentifier keyspace,
       Map<String, ByteBuffer> customPayloadForBoundStatements,
       Boolean idempotent,
@@ -70,7 +70,7 @@ public class DefaultPreparedStatement implements PreparedStatement {
     this.variableDefinitions = variableDefinitions;
     this.resultMetadata = new ResultMetadata(resultMetadataId, resultSetDefinitions);
     this.configProfileName = configProfileName;
-    this.configProfile = configProfile;
+    this.executionProfile = executionProfile;
     this.customPayloadForBoundStatements = customPayloadForBoundStatements;
     this.idempotent = idempotent;
     this.codecRegistry = codecRegistry;
@@ -127,7 +127,7 @@ public class DefaultPreparedStatement implements PreparedStatement {
         ValuesHelper.encodePreparedValues(
             values, variableDefinitions, codecRegistry, protocolVersion),
         configProfileName,
-        configProfile,
+        executionProfile,
         // If the prepared statement had a per-request keyspace, we want to use that as the routing
         // keyspace.
         repreparePayload.keyspace,

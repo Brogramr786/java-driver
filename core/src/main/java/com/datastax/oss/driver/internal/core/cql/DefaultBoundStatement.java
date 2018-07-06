@@ -17,7 +17,7 @@ package com.datastax.oss.driver.internal.core.cql;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.ProtocolVersion;
-import com.datastax.oss.driver.api.core.config.DriverConfigProfile;
+import com.datastax.oss.driver.api.core.config.DriverExecutionProfile;
 import com.datastax.oss.driver.api.core.cql.BoundStatement;
 import com.datastax.oss.driver.api.core.cql.ColumnDefinitions;
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
@@ -40,7 +40,7 @@ public class DefaultBoundStatement implements BoundStatement {
   private final ColumnDefinitions variableDefinitions;
   private final ByteBuffer[] values;
   private final String configProfileName;
-  private final DriverConfigProfile configProfile;
+  private final DriverExecutionProfile executionProfile;
   private final CqlIdentifier routingKeyspace;
   private final ByteBuffer routingKey;
   private final Token routingToken;
@@ -57,7 +57,7 @@ public class DefaultBoundStatement implements BoundStatement {
       ColumnDefinitions variableDefinitions,
       ByteBuffer[] values,
       String configProfileName,
-      DriverConfigProfile configProfile,
+      DriverExecutionProfile executionProfile,
       CqlIdentifier routingKeyspace,
       ByteBuffer routingKey,
       Token routingToken,
@@ -72,7 +72,7 @@ public class DefaultBoundStatement implements BoundStatement {
     this.variableDefinitions = variableDefinitions;
     this.values = values;
     this.configProfileName = configProfileName;
-    this.configProfile = configProfile;
+    this.executionProfile = executionProfile;
     this.routingKeyspace = routingKeyspace;
     this.routingKey = routingKey;
     this.routingToken = routingToken;
@@ -141,7 +141,7 @@ public class DefaultBoundStatement implements BoundStatement {
         variableDefinitions,
         newValues,
         configProfileName,
-        configProfile,
+        executionProfile,
         routingKeyspace,
         routingKey,
         routingToken,
@@ -167,19 +167,19 @@ public class DefaultBoundStatement implements BoundStatement {
   }
 
   @Override
-  public String getConfigProfileName() {
+  public String getExecutionProfileName() {
     return configProfileName;
   }
 
   @NonNull
   @Override
-  public BoundStatement setConfigProfileName(@Nullable String newConfigProfileName) {
+  public BoundStatement setExecutionProfileName(@Nullable String newConfigProfileName) {
     return new DefaultBoundStatement(
         preparedStatement,
         variableDefinitions,
         values,
         newConfigProfileName,
-        configProfile,
+        executionProfile,
         routingKeyspace,
         routingKey,
         routingToken,
@@ -193,19 +193,19 @@ public class DefaultBoundStatement implements BoundStatement {
   }
 
   @Override
-  public DriverConfigProfile getConfigProfile() {
-    return configProfile;
+  public DriverExecutionProfile getExecutionProfile() {
+    return executionProfile;
   }
 
   @NonNull
   @Override
-  public BoundStatement setConfigProfile(@Nullable DriverConfigProfile newConfigProfile) {
+  public BoundStatement setExecutionProfile(@Nullable DriverExecutionProfile newProfile) {
     return new DefaultBoundStatement(
         preparedStatement,
         variableDefinitions,
         values,
         configProfileName,
-        newConfigProfile,
+        newProfile,
         routingKeyspace,
         routingKey,
         routingToken,
@@ -238,7 +238,7 @@ public class DefaultBoundStatement implements BoundStatement {
         variableDefinitions,
         values,
         configProfileName,
-        configProfile,
+        executionProfile,
         newRoutingKeyspace,
         routingKey,
         routingToken,
@@ -284,7 +284,7 @@ public class DefaultBoundStatement implements BoundStatement {
         variableDefinitions,
         values,
         configProfileName,
-        configProfile,
+        executionProfile,
         routingKeyspace,
         newRoutingKey,
         routingToken,
@@ -310,7 +310,7 @@ public class DefaultBoundStatement implements BoundStatement {
         variableDefinitions,
         values,
         configProfileName,
-        configProfile,
+        executionProfile,
         routingKeyspace,
         routingKey,
         newRoutingToken,
@@ -337,7 +337,7 @@ public class DefaultBoundStatement implements BoundStatement {
         variableDefinitions,
         values,
         configProfileName,
-        configProfile,
+        executionProfile,
         routingKeyspace,
         routingKey,
         routingToken,
@@ -363,7 +363,7 @@ public class DefaultBoundStatement implements BoundStatement {
         variableDefinitions,
         values,
         configProfileName,
-        configProfile,
+        executionProfile,
         routingKeyspace,
         routingKey,
         routingToken,
@@ -389,7 +389,7 @@ public class DefaultBoundStatement implements BoundStatement {
         variableDefinitions,
         values,
         configProfileName,
-        configProfile,
+        executionProfile,
         routingKeyspace,
         routingKey,
         routingToken,
@@ -415,7 +415,7 @@ public class DefaultBoundStatement implements BoundStatement {
         variableDefinitions,
         values,
         configProfileName,
-        configProfile,
+        executionProfile,
         routingKeyspace,
         routingKey,
         routingToken,
@@ -441,7 +441,7 @@ public class DefaultBoundStatement implements BoundStatement {
         variableDefinitions,
         values,
         configProfileName,
-        configProfile,
+        executionProfile,
         routingKeyspace,
         routingKey,
         routingToken,

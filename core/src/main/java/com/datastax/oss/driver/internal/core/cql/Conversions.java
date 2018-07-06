@@ -19,7 +19,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.ProtocolVersion;
 import com.datastax.oss.driver.api.core.config.DefaultDriverOption;
-import com.datastax.oss.driver.api.core.config.DriverConfigProfile;
+import com.datastax.oss.driver.api.core.config.DriverExecutionProfile;
 import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
 import com.datastax.oss.driver.api.core.cql.BatchStatement;
 import com.datastax.oss.driver.api.core.cql.BatchableStatement;
@@ -94,7 +94,7 @@ import java.util.Map;
 public class Conversions {
 
   public static Message toMessage(
-      Statement<?> statement, DriverConfigProfile config, InternalDriverContext context) {
+      Statement<?> statement, DriverExecutionProfile config, InternalDriverContext context) {
     int consistency =
         context
             .consistencyLevelRegistry()
@@ -341,8 +341,8 @@ public class Conversions {
             ? null
             : ByteBuffer.wrap(response.resultMetadataId).asReadOnlyBuffer(),
         toColumnDefinitions(response.resultMetadata, context),
-        request.getConfigProfileNameForBoundStatements(),
-        request.getConfigProfileForBoundStatements(),
+        request.getExecutionProfileNameForBoundStatements(),
+        request.getExecutionProfileForBoundStatements(),
         request.getKeyspace(),
         NullAllowingImmutableMap.copyOf(request.getCustomPayloadForBoundStatements()),
         request.areBoundStatementsIdempotent(),
