@@ -39,7 +39,6 @@ import com.datastax.oss.driver.shaded.guava.common.collect.ImmutableMultimap;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -147,14 +146,14 @@ public class TableParser extends RelationParser {
       isCompactStorage = isSuper || isDense || !isCompound;
       boolean isStaticCompact = !isSuper && !isDense && !isCompound;
       if (isStaticCompact) {
-        pruneStaticCompactTableColumns(rawColumns);
+        RawColumn.pruneStaticCompactTableColumns(rawColumns);
       } else if (isDense) {
-        pruneDenseTableColumnsV3(rawColumns);
+        RawColumn.pruneDenseTableColumnsV3(rawColumns);
       }
     } else {
       boolean isDense = tableRow.getBoolean("is_dense");
       if (isDense) {
-        pruneDenseTableColumnsV2(rawColumns);
+        RawColumn.pruneDenseTableColumnsV2(rawColumns);
       }
       DataTypeClassNameCompositeParser.ParseResult comparator =
           new DataTypeClassNameCompositeParser()
@@ -225,51 +224,6 @@ public class TableParser extends RelationParser {
         allColumnsBuilder.build(),
         options,
         indexesBuilder.build());
-  }
-
-  // Upon migration from thrift to CQL, we internally create a pair of surrogate clustering/regular
-  // columns for compact static tables. These columns shouldn't be exposed to the user but are
-  // currently returned by C*. We also need to remove the static keyword for all other columns in
-  // the table.
-  private void pruneStaticCompactTableColumns(List<RawColumn> columns) {
-    ListIterator<RawColumn> iterator = columns.listIterator();
-    while (iterator.hasNext()) {
-      RawColumn column = iterator.next();
-      switch (column.kind) {
-        case RawColumn.KIND_CLUSTERING_COLUMN:
-        case RawColumn.KIND_REGULAR:
-          iterator.remove();
-          break;
-        case RawColumn.KIND_STATIC:
-          column.kind = RawColumn.KIND_REGULAR;
-          break;
-        default:
-          // nothing to do
-      }
-    }
-  }
-
-  // Upon migration from thrift to CQL, we internally create a surrogate column "value" of type
-  // EmptyType for dense tables. This column shouldn't be exposed to the user but is currently
-  // returned by C*.
-  private void pruneDenseTableColumnsV3(List<RawColumn> columns) {
-    ListIterator<RawColumn> iterator = columns.listIterator();
-    while (iterator.hasNext()) {
-      RawColumn column = iterator.next();
-      if (column.kind.equals(RawColumn.KIND_REGULAR) && "empty".equals(column.dataType)) {
-        iterator.remove();
-      }
-    }
-  }
-
-  private void pruneDenseTableColumnsV2(List<RawColumn> columns) {
-    ListIterator<RawColumn> iterator = columns.listIterator();
-    while (iterator.hasNext()) {
-      RawColumn column = iterator.next();
-      if (column.kind.equals(RawColumn.KIND_COMPACT_VALUE) && column.name.asInternal().isEmpty()) {
-        iterator.remove();
-      }
-    }
   }
 
   // In C*<=2.2, index information is stored alongside the column.

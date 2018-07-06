@@ -24,6 +24,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import net.jcip.annotations.NotThreadSafe;
 
@@ -33,22 +34,6 @@ import net.jcip.annotations.NotThreadSafe;
  */
 @NotThreadSafe
 public class RawColumn implements Comparable<RawColumn> {
-
-  public static List<RawColumn> toRawColumns(
-      Collection<AdminRow> rows,
-      CqlIdentifier keyspaceId,
-      Map<CqlIdentifier, UserDefinedType> userTypes) {
-    if (rows.isEmpty()) {
-      return Collections.emptyList();
-    } else {
-      // Use a mutable list, we might remove some elements later
-      List<RawColumn> result = Lists.newArrayListWithExpectedSize(rows.size());
-      for (AdminRow row : rows) {
-        result.add(new RawColumn(row, keyspaceId, userTypes));
-      }
-      return result;
-    }
-  }
 
   public static final String KIND_PARTITION_KEY = "partition_key";
   public static final String KIND_CLUSTERING_COLUMN = "clustering";
@@ -133,6 +118,80 @@ public class RawColumn implements Comparable<RawColumn> {
       return Integer.compare(this.position, that.position);
     } else {
       return this.name.asInternal().compareTo(that.name.asInternal());
+    }
+  }
+
+  public static List<RawColumn> toRawColumns(
+      Collection<AdminRow> rows,
+      CqlIdentifier keyspaceId,
+      Map<CqlIdentifier, UserDefinedType> userTypes) {
+    if (rows.isEmpty()) {
+      return Collections.emptyList();
+    } else {
+      // Use a mutable list, we might remove some elements later
+      List<RawColumn> result = Lists.newArrayListWithExpectedSize(rows.size());
+      for (AdminRow row : rows) {
+        result.add(new RawColumn(row, keyspaceId, userTypes));
+      }
+      return result;
+    }
+  }
+
+  /**
+   * Helper method to filter columns while parsing a table's metadata.
+   *
+   * <p>Upon migration from thrift to CQL, we internally create a pair of surrogate
+   * clustering/regular columns for compact static tables. These columns shouldn't be exposed to the
+   * user but are currently returned by C*. We also need to remove the static keyword for all other
+   * columns in the table.
+   */
+  public static void pruneStaticCompactTableColumns(List<RawColumn> columns) {
+    ListIterator<RawColumn> iterator = columns.listIterator();
+    while (iterator.hasNext()) {
+      RawColumn column = iterator.next();
+      switch (column.kind) {
+        case KIND_CLUSTERING_COLUMN:
+        case KIND_REGULAR:
+          iterator.remove();
+          break;
+        case KIND_STATIC:
+          column.kind = KIND_REGULAR;
+          break;
+        default:
+          // nothing to do
+      }
+    }
+  }
+
+  /**
+   * Helper method to filter columns while parsing a table's metadata.
+   *
+   * <p>Upon migration from thrift to CQL, we internally create a surrogate column "value" of type
+   * EmptyType for dense tables. This column shouldn't be exposed to the user but is currently
+   * returned by C*.
+   */
+  public static void pruneDenseTableColumnsV3(List<RawColumn> columns) {
+    ListIterator<RawColumn> iterator = columns.listIterator();
+    while (iterator.hasNext()) {
+      RawColumn column = iterator.next();
+      if (column.kind.equals(KIND_REGULAR) && "empty".equals(column.dataType)) {
+        iterator.remove();
+      }
+    }
+  }
+
+  /**
+   * Helper method to filter columns while parsing a table's metadata.
+   *
+   * <p>This is similar to {@link #pruneDenseTableColumnsV3(List)}, but for legacy C* versions.
+   */
+  public static void pruneDenseTableColumnsV2(List<RawColumn> columns) {
+    ListIterator<RawColumn> iterator = columns.listIterator();
+    while (iterator.hasNext()) {
+      RawColumn column = iterator.next();
+      if (column.kind.equals(KIND_COMPACT_VALUE) && column.name.asInternal().isEmpty()) {
+        iterator.remove();
+      }
     }
   }
 }
