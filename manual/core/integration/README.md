@@ -230,58 +230,189 @@ If your build tool can't fetch dependencies from Maven central, we publish a bin
 The driver and its dependencies must be in the compile-time classpath. Application resources, such
 as `application.conf` and `logback.xml` in our previous examples, must be in the runtime classpath.
 
-### Component lifecycles
+### Driver dependencies
 
-`CqlSession` is a long-lived object: it is expensive to create, and designed to be shared safely
-across threads. In most cases, the best approach is to create a single instance, and share it
-throughout your application. With the standard servlet API, this is typically done with a
-[ServletContextListener]; higher-level frameworks generally have an equivalent "singleton" concept.
+The driver depends on a number of third-party libraries; some of those dependencies are opt-in,
+while others are present by default, but may be excluded under specific circumstances.
 
-Don't forget to close the session when your application shuts down, otherwise the driver's internal
-threads might prevent the VM from exiting.
+Here's a rundown of what you can customize:
 
-[Simple statements](../statements/simple/) are immutable and completely detached from the session.
-You can store them as constants:
+#### Netty
 
-```java
-public static final SimpleStatement selectVersion =
-    SimpleStatement.newInstance("SELECT release_version FROM system.local");
+[Netty](https://netty.io/) is the NIO framework that powers the driver's networking layer.
+
+It is a required dependency, but we provide a a [shaded JAR](../shaded_jar/) that relocates it to a
+different Java package; this is useful to avoid dependency hell if you already use Netty in another
+part of your application.
+
+### Typesafe config
+
+[Typesafe config](https://lightbend.github.io/config/) is used for our file-based
+[configuration](../configuration/).
+
+It is a required dependency if you use the driver's built-in configuration loader, but this can be
+[completely overridden](../configuration/#bypassing-typesafe-config) with your own implementation,
+that could use a different framework or an ad-hoc solution.
+
+In that case, you can exclude the dependency:
+
+```xml
+<dependency>
+  <groupId>com.datastax.oss</groupId>
+  <artifactId>java-driver-core</artifactId>
+  <version>4.0.0-beta1</version>
+  <exclusions>
+    <exclusion>
+      <groupId>com.typesafe</groupId>
+      <artifactId>config</artifactId>
+    </exclusion>
+  </exclusions>
+</dependency>
+``` 
+
+#### Native libraries
+
+The driver performs native calls with [JNR](https://github.com/jnr). This is used in two cases:
+
+* to access a microsecond-precision clock in [timestamp generators](../query_timestamps/);
+* to get the process ID when generating [UUIDs][Uuids].
+
+In both cases, this is completely optional; if system calls are not available on the current
+platform, or the libraries fail to load for any reason, the driver falls back to pure Java
+workarounds.
+
+If you don't want to use system calls, or already know (from looking at the driver's logs) that they
+are not available on your platform, you can exclude the following dependencies:
+
+```xml
+<dependency>
+  <groupId>com.datastax.oss</groupId>
+  <artifactId>java-driver-core</artifactId>
+  <version>4.0.0-beta1</version>
+  <exclusions>
+    <exclusion>
+      <groupId>com.github.jnr</groupId>
+      <artifactId>jnr-ffi</artifactId>
+    </exclusion>
+    <exclusion>
+      <groupId>com.github.jnr</groupId>
+      <artifactId>jnr-posix</artifactId>
+    </exclusion>
+  </exclusions>
+</dependency>
 ```
 
-[Prepared statements](../statements/prepared/) are thread-safe and should be created only once. But
-they depend on the session, so you can't create them statically. One common pattern is to store them
-as fields in DAO/repository components (assuming those components are themselves singletons):
+#### Compression libraries
 
-```java
-class UserRepository {
+The driver supports compression with either [LZ4](https://github.com/jpountz/lz4-java) or
+[Snappy](http://google.github.io/snappy/).
 
-  private final CqlSession session;
-  private final PreparedStatement getStatement;
+These dependencies are optional; you have to add them explicitly in your application in order to
+enable compression. See the [Compression](../compression/) page for more details.
 
-  public UserRepository(CqlSession session) {
-    this.session = session;
-    this.getStatement = session.prepare("SELECT * FROM user WHERE id = ?");
-  }
+#### Metrics
 
-  public User get(UUID id) {
-    BoundStatement boundStatement = getStatement.bind(id);
-    Row row = session.execute(boundStatement).one();
-    return toUser(row);
-  }
-}
+The driver exposes [metrics](../metrics/) through the
+[Dropwizard](http://metrics.dropwizard.io/4.0.0/manual/index.html) library.
+
+The dependency is declared as required, but metrics are optional. If you've disabled all metrics,
+and never call [Session.getMetrics] anywhere in your application, you can remove the dependency:
+
+```xml
+<dependency>
+  <groupId>com.datastax.oss</groupId>
+  <artifactId>java-driver-core</artifactId>
+  <version>4.0.0-beta1</version>
+  <exclusions>
+    <exclusion>
+      <groupId>io.dropwizard.metrics</groupId>
+      <artifactId>metrics-core</artifactId>
+    </exclusion>
+  </exclusions>
+</dependency>
 ```
 
-Instances of [CqlIdentifier] \(used for [case-sensitive](../../case_sensitivity/) schemas) and
-[GenericType] \(used with [custom codecs](../custom_codecs/)) are immutable, and should be stored
-as constants. 
+In addition, "timer" metrics use [HdrHistogram](http://hdrhistogram.github.io/HdrHistogram/) to
+record latency percentiles. At the time of writing, these metrics are: `cql-requests`,
+`throttling.delay` and `cql-messages`; you can also identify them by reading the comments in the
+[configuration reference](../configuration/reference/) (look for "exposed as a Timer").
 
+If all of these metrics are disabled, you can remove the dependency:
+
+```xml
+<dependency>
+  <groupId>com.datastax.oss</groupId>
+  <artifactId>java-driver-core</artifactId>
+  <version>4.0.0-beta1</version>
+  <exclusions>
+    <exclusion>
+      <groupId>org.hdrhistogram</groupId>
+      <artifactId>HdrHistogram</artifactId>
+    </exclusion>
+  </exclusions>
+</dependency>
+```
+
+#### Documenting annotations
+
+The driver team uses annotations to document certain aspects of the code:
+
+* thread safety with [Java Concurrency in Practice](http://jcip.net/annotations/doc/index.html)
+  annotations `@Immutable`, `@ThreadSafe`, `@NotThreadSafe` and `@GuardedBy`;
+* nullability with [SpotBugs](https://spotbugs.github.io/) annotations `@Nullable` and `@NonNull`.
+
+This is mostly used during development; while these annotations are retained in class files, they
+serve no purpose at runtime. Whether to make them optional dependencies is up for debate:
+
+* if they are required, it's two additional JARs that every client has to pull in (admittedly they
+  are quite small);
+* if they are optional, the bytecode will reference missing classes. This is not a blocker, but it
+  can manifest to the end user in a few ways:
+  
+    * if you navigate to the driver's sources in your IDE, the missing annotations will be
+      highlighted as errors (note however that modern IDEs such as IntelliJ IDEA can analyze
+      nullability annotations even if they are missing from the classpath); 
+    * this produces compiler warnings (see [this discussion][guava] of a similar issue for Google's
+      Guava library).
+
+The Java driver team has decided to make the dependencies optional. If that creates any problem for
+you, the workaround is to redeclare them explicitly in your application:
+
+```xml
+<dependency>
+  <groupId>com.datastax.oss</groupId>
+  <artifactId>java-driver-core</artifactId>
+  <version>4.0.0-beta1</version>
+</dependency>
+<dependency>
+  <groupId>com.github.stephenc.jcip</groupId>
+  <artifactId>jcip-annotations</artifactId>
+  <version>1.0-1</version>
+</dependency>
+<dependency>
+  <groupId>com.github.spotbugs</groupId>
+  <artifactId>spotbugs-annotations</artifactId>
+  <version>3.1.3</version>
+</dependency>
+```
+
+#### Mandatory dependencies
+
+The remaining core driver dependencies are the only ones that are truly mandatory:
+
+* the [native protocol](https://github.com/datastax/native-protocol) layer. This is essentially part
+  of the driver code, but was externalized for reuse in other projects;
+* `java-driver-shaded-guava`, a shaded version of [Guava](https://github.com/google/guava). It is
+  relocated to a different package, and only used by internal driver code, so it should be
+  completely transparent to third-party code;
+* the [SLF4J](https://www.slf4j.org/) API for [logging](../logging/).
 
 [central_oss]: https://search.maven.org/#search%7Cga%7C1%7Ccom.datastax.oss
 [maven_pom]: https://maven.apache.org/guides/introduction/introduction-to-the-pom.html
 [gradle_init]: https://guides.gradle.org/creating-new-gradle-builds/
 [downloads]: http://downloads.datastax.com/java-driver/
-[ServletContextListener]: https://docs.oracle.com/javaee/6/api/javax/servlet/ServletContextListener.html
+[guava]: https://github.com/google/guava/issues/2721
 
-[CqlIdentifier]:                  https://docs.datastax.com/en/drivers/java/4.0/com/datastax/oss/driver/api/core/CqlIdentifier.html
-[GenericType]:                    https://docs.datastax.com/en/drivers/java/4.0/com/datastax/oss/driver/api/core/type/reflect/GenericType.html
+[Session.getMetrics]:             https://docs.datastax.com/en/drivers/java/4.0/com/datastax/oss/driver/api/core/session/Session.html#getMetrics--
 [SessionBuilder.addContactPoint]: https://docs.datastax.com/en/drivers/java/4.0/com/datastax/oss/driver/api/core/session/SessionBuilder.html#addContactPoint-java.net.InetSocketAddress-
+[Uuids]:                          https://docs.datastax.com/en/drivers/java/4.0/com/datastax/oss/driver/api/core/uuid/Uuids.html
