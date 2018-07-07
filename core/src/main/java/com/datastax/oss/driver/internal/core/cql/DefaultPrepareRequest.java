@@ -37,13 +37,13 @@ import net.jcip.annotations.Immutable;
  * <ul>
  *   <li>the prepare request:
  *       <ul>
- *         <li>will use the same configuration profile (or configuration profile name) as the {@code
+ *         <li>will use the same execution profile (or execution profile name) as the {@code
  *             SimpleStatement};
  *         <li>will use the same custom payload as the {@code SimpleStatement};
  *       </ul>
  *   <li>any bound statement created from the prepared statement:
  *       <ul>
- *         <li>will use the same configuration profile (or configuration profile name) as the {@code
+ *         <li>will use the same execution profile (or execution profile name) as the {@code
  *             SimpleStatement};
  *         <li>will use the same custom payload as the {@code SimpleStatement};
  *         <li>will be idempotent if and only if the {@code SimpleStatement} was idempotent.

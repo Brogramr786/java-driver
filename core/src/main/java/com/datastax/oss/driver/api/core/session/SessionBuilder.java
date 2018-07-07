@@ -193,8 +193,8 @@ public abstract class SessionBuilder<SelfT extends SessionBuilder, SessionT> {
   }
 
   /**
-   * Adds a custom filter to include/exclude nodes for a particular configuration profile. This
-   * assumes that you're also using a dedicated load balancing policy for that profile.
+   * Adds a custom filter to include/exclude nodes for a particular execution profile. This assumes
+   * that you're also using a dedicated load balancing policy for that profile.
    *
    * <p>The predicate's {@link Predicate#test(Object) test()} method will be invoked each time the
    * {@link LoadBalancingPolicy} processes a topology or state change: if it returns false, the
