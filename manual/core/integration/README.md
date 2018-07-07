@@ -19,9 +19,9 @@ $ find . -type f
 ./src/main/java/Main.java
 ```
 
-##### pom.xml 
+##### Project descriptor
 
-This is the [Project Object Model][maven_pom] that describes your application. We declare the
+`pom.xml` is the [Project Object Model][maven_pom] that describes your application. We declare the
 dependencies, and tell Maven that we're going to use Java 8:
 
 ```xml
@@ -62,7 +62,10 @@ dependencies, and tell Maven that we're going to use Java 8:
 </project>
 ```
 
-##### application.conf
+##### Application configuration
+
+`application.conf` is not stricly necessary, but it illustrates an important point about the
+driver's [configuration](../configuration/): you override any of the driver's default options here.
 
 ```
 datastax-java-driver {
@@ -70,15 +73,12 @@ datastax-java-driver {
 }
 ```
 
-This file is not stricly necessary, but it illustrates an important point about the driver's
-[configuration](../configuration/): you override any of the driver's default options here.
-
 In this case, we just specify a custom name for our session, it will appear in the logs.
 
-##### logback.xml
+##### Logging configuration
 
 For this example, we choose Logback as our [logging framework](../logging/) (we added the dependency
-in `pom.xml`). This file configures it to send the driver's `INFO` logs to the console.
+in `pom.xml`). `logback.xml` configures it to send the driver's `INFO` logs to the console.
 
 ```xml
 <configuration>
@@ -87,7 +87,7 @@ in `pom.xml`). This file configures it to send the driver's `INFO` logs to the c
       <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
     </encoder>
   </appender>
-  <root level="ERROR">
+  <root level="WARN">
     <appender-ref ref="STDOUT"/>
   </root>
   <logger name="com.datastax.oss.driver" level= "INFO"/>
@@ -97,10 +97,10 @@ in `pom.xml`). This file configures it to send the driver's `INFO` logs to the c
 Again, this is not strictly necessary: a truly minimal example could run without the Logback
 dependency, or this file; but the default behavior is a bit verbose. 
 
-##### Main.java
+##### Main class
 
-This is the canonical example introduced in our [quick start](../#quick-start); it connects to
-Cassandra, queries the server version and prints it: 
+`Main.java` is the canonical example introduced in our [quick start](../#quick-start); it connects
+to Cassandra, queries the server version and prints it:
 
 ```java
 import com.datastax.oss.driver.api.core.CqlSession;
@@ -181,8 +181,8 @@ dependencies {
 }
 ```
 
-Then place [application.conf](#application-conf), [logback.xml](#logback-xml) and
-[Main.java](#main-java) in the same locations, and with the same contents, as in the Maven example:
+Then place [application.conf](#application-configuration), [logback.xml](#logging-configuration) and
+[Main.java](#main-class) in the same locations, and with the same contents, as in the Maven example:
 
 ```
 ./src/main/resources/application.conf
